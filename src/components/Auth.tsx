@@ -21,7 +21,7 @@ export function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-6 text-center">Witaj w PinemMF</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Witaj w Spennly</h2>
         {error && (
           <p className="text-red-500 text-sm mb-4 bg-red-50 p-2 rounded-lg">
             {error}

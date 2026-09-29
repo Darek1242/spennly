@@ -1,0 +1,117 @@
+@import "tailwindcss";
+@import "react-datepicker/dist/react-datepicker.css";
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f3f4f6;
+  font-family: sans-serif;
+}
+
+/* Zapewnia, że kalendarz zawsze wyskakuje na wierzchu */
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+/* Wymusza, żeby DatePicker nie łamał linii */
+.react-datepicker-wrapper {
+  display: block !important;
+}
+
+/* Naprawa szerokości kalendarza */
+.react-datepicker {
+  font-family: sans-serif;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 1rem !important;
+  padding: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Wymuszenie czytelnego układu dla MonthPicker */
+.react-datepicker__monthPicker {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 5px !important;
+  padding: 10px !important;
+  width: 250px !important;
+}
+
+/* Reset stylów dla przycisków miesięcy, żeby nie były rozciągnięte */
+.react-datepicker__month-text {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 8px !important;
+  margin: 0 !important;
+  width: auto !important;
+  flex: none !important;
+}
+
+/* Ukrycie dodatkowych niepotrzebnych elementów w tym widoku */
+.react-datepicker__month-container {
+  float: none !important;
+}
+
+/* Naprawa nagłówka kalendarza (miesiąc i strzałki) */
+.react-datepicker__header {
+  background-color: white !important;
+  border-bottom: none !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Wyśrodkowanie strzałek względem nagłówka */
+.react-datepicker__navigation {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 40px !important; /* Wysokość całego obszaru nagłówka */
+  width: 40px !important;
+  top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.react-datepicker__navigation--previous {
+  left: 5px !important;
+}
+
+.react-datepicker__navigation--next {
+  right: 5px !important;
+}
+
+/* Sprawienie, że tekst miesiąca zawsze jest w jednej linii i na środku */
+.react-datepicker__current-month {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Zwiększenie klikalności strzałek na telefonie */
+.react-datepicker__navigation-icon::before {
+  border-width: 2px 2px 0 0 !important;
+  height: 10px !important;
+  width: 10px !important;
+}
+
+/* Wymusza brak obramowania dla wszystkich elementów SVG wewnątrz wykresów */
+.recharts-wrapper *:focus,
+.recharts-wrapper *:active,
+.recharts-surface:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Opcjonalnie: wyłącz kursor "pointer", jeśli nie chcesz, by wykres reagował na kliknięcia */
+.recharts-surface {
+  cursor: default !important;
+}

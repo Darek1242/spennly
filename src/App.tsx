@@ -21,8 +21,6 @@ import {
   ChevronRight,
   Wallet as WalletIcon,
   Settings,
-  Trash2,
-  Edit2,
 } from "lucide-react";
 export default function App() {
   const [session, setSession] = useState<any>(null);

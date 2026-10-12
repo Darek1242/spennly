@@ -28,23 +28,19 @@ export function ChartComponent({
     .filter((d) => d.value > 0);
 
   return (
-    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+    <div className="bg-white p-4 rounded-3xl shadow-sm h-auto flex flex-col items-center">
       <h3 className="font-bold text-gray-800 mb-4">Podział wydatków</h3>
-      <div className="h-56">
-        <ResponsiveContainer width="100%" height={350}>
-          {" "}
-          {/* Ustal sztywną wysokość dla mobilki */}
-          <PieChart margin={{ top: 20, right: 0, bottom: 40, left: 0 }}>
-            {" "}
-            {/* Dodaj marginesy */}
+      <div className="w-full h-[300px]">
+        {" "}
+        {/* Stała wysokość */}
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
             <Pie
               data={chartData}
-              /* Dodaj to: */
-              style={{ outline: "none" }}
-              innerRadius={60} // Zmniejsz trochę, żeby napisy się mieściły
-              outerRadius={80} // Zmniejsz, żeby koło nie "puchło" do krawędzi
-              paddingAngle={5}
+              innerRadius={60}
+              outerRadius={80} // Mniejszy promień dla lepszego dopasowania
               dataKey="value"
+              style={{ outline: "none" }}
             >
               {chartData.map((cat, i) => (
                 <Cell
@@ -54,12 +50,17 @@ export function ChartComponent({
               ))}
             </Pie>
             <Tooltip />
-            <Legend verticalAlign="bottom" height={36} />{" "}
-            {/* Przesuń legendę niżej */}
+            {/* Zmieniamy legendę na bardziej przyjazną mobilnie */}
+            <Legend
+              layout="horizontal"
+              verticalAlign="bottom"
+              align="center"
+              wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-2 w-full">
         {chartData.map((cat, i) => (
           <div
             key={cat.name + i}

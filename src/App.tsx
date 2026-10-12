@@ -409,15 +409,21 @@ export default function App() {
           <div className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl">
             <h2 className="font-bold text-lg mb-4">Edytuj wpłatę</h2>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={editingIncome.amount}
-              onChange={(e) =>
-                setEditingIncome({
-                  ...editingIncome,
-                  amount: parseFloat(e.target.value),
-                })
-              }
-              className="w-full border p-3 rounded-xl mb-6 outline-none focus:ring-2 focus:ring-green-500"
+              onChange={(e) => {
+                // Zamień przecinek na kropkę, żeby parseFloat zadziałał poprawnie
+                const val = e.target.value.replace(",", ".");
+                // Pozwól tylko na liczby i opcjonalnie jedną kropkę
+                if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                  setEditingIncome({
+                    ...editingIncome,
+                    amount: parseFloat(val) || 0, // parseFloat zamieni string na liczbę
+                  });
+                }
+              }}
+              className="w-full border p-3 rounded-xl mb-4"
             />
             <div className="flex gap-2">
               <button

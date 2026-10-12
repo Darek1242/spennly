@@ -458,14 +458,15 @@ export default function App() {
           <div className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl">
             <h2 className="font-bold text-lg mb-4">Edytuj wydatek</h2>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={editingExpense.amount}
-              onChange={(e) =>
-                setEditingExpense({
-                  ...editingExpense,
-                  amount: parseFloat(e.target.value),
-                })
-              }
+              onChange={(e) => {
+                const val = e.target.value.replace(",", ".");
+                if (/^\d*\.?\d*$/.test(val)) {
+                  setEditingExpense({ ...editingExpense, amount: val });
+                }
+              }}
               className="w-full border p-3 rounded-xl mb-6 outline-none focus:ring-2 focus:ring-green-500"
             />
             <div className="flex gap-2">
@@ -477,15 +478,15 @@ export default function App() {
               </button>
               <button
                 onClick={async () => {
+                  const amount = parseFloat(editingExpense.amount);
                   const { error } = await supabase
                     .from("expenses")
-                    .update({ amount: editingExpense.amount })
+                    .update({ amount: amount })
                     .eq("id", editingExpense.id)
                     .eq("user_id", session.user.id);
-
                   if (!error) {
                     await db.expenses.update(editingExpense.id, {
-                      amount: editingExpense.amount,
+                      amount: amount,
                     });
                     setEditingExpense(null);
                   } else {

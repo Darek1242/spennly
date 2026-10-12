@@ -71,12 +71,17 @@ export function ReportView({ walletId }: { walletId: number | null }) {
           <h3 className="font-bold text-gray-800 mb-6">
             Wydatki: {totalSpent.toFixed(2)} PLN
           </h3>
-          <ResponsiveContainer width="100%" height="90%">
-            <PieChart>
+          <ResponsiveContainer width="100%" height={350}>
+            {" "}
+            {/* Ustal sztywną wysokość dla mobilki */}
+            <PieChart margin={{ top: 20, right: 0, bottom: 40, left: 0 }}>
+              {" "}
+              {/* Dodaj marginesy */}
               <Pie
                 data={categoryData}
-                innerRadius={80}
-                outerRadius={120}
+                innerRadius={60} // Zmniejsz trochę, żeby napisy się mieściły
+                outerRadius={80} // Zmniejsz, żeby koło nie "puchło" do krawędzi
+                paddingAngle={5}
                 dataKey="value"
                 style={{ outline: "none" }} // Usunięcie ramki przy kliknięciu
               >
@@ -85,7 +90,8 @@ export function ReportView({ walletId }: { walletId: number | null }) {
                 ))}
               </Pie>
               <Tooltip />
-              <Legend />
+              <Legend verticalAlign="bottom" height={36} />{" "}
+              {/* Przesuń legendę niżej */}
             </PieChart>
           </ResponsiveContainer>
         </div>

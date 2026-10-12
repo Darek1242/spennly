@@ -1,4 +1,11 @@
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -24,14 +31,19 @@ export function ChartComponent({
     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
       <h3 className="font-bold text-gray-800 mb-4">Podział wydatków</h3>
       <div className="h-56">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+        <ResponsiveContainer width="100%" height={350}>
+          {" "}
+          {/* Ustal sztywną wysokość dla mobilki */}
+          <PieChart margin={{ top: 20, right: 0, bottom: 40, left: 0 }}>
+            {" "}
+            {/* Dodaj marginesy */}
             <Pie
               data={chartData}
               /* Dodaj to: */
               style={{ outline: "none" }}
-              innerRadius={60}
-              outerRadius={80}
+              innerRadius={60} // Zmniejsz trochę, żeby napisy się mieściły
+              outerRadius={80} // Zmniejsz, żeby koło nie "puchło" do krawędzi
+              paddingAngle={5}
               dataKey="value"
             >
               {chartData.map((cat, i) => (
@@ -41,6 +53,9 @@ export function ChartComponent({
                 />
               ))}
             </Pie>
+            <Tooltip />
+            <Legend verticalAlign="bottom" height={36} />{" "}
+            {/* Przesuń legendę niżej */}
           </PieChart>
         </ResponsiveContainer>
       </div>

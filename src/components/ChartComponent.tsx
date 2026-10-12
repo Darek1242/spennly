@@ -30,15 +30,18 @@ export function ChartComponent({
   return (
     <div className="bg-white p-4 rounded-3xl shadow-sm h-auto flex flex-col items-center">
       <h3 className="font-bold text-gray-800 mb-4">Podział wydatków</h3>
-      <div className="w-full h-[300px]">
+      <div className="w-full h-[350px]">
         {" "}
-        {/* Stała wysokość */}
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+        {/* Ustal sztywną wysokość dla mobilki */}
+        <ResponsiveContainer width="100%" height={350}>
+          <PieChart margin={{ top: 20, right: 0, bottom: 40, left: 0 }}>
+            {" "}
+            {/* Dodaj marginesy */}
             <Pie
               data={chartData}
-              innerRadius={60}
-              outerRadius={80} // Mniejszy promień dla lepszego dopasowania
+              innerRadius={60} // Zmniejsz trochę, żeby napisy się mieściły
+              outerRadius={80} // Zmniejsz, żeby koło nie "puchło" do krawędzi
+              paddingAngle={5}
               dataKey="value"
               style={{ outline: "none" }}
             >
@@ -51,12 +54,8 @@ export function ChartComponent({
             </Pie>
             <Tooltip />
             {/* Zmieniamy legendę na bardziej przyjazną mobilnie */}
-            <Legend
-              layout="horizontal"
-              verticalAlign="bottom"
-              align="center"
-              wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }}
-            />
+            <Legend verticalAlign="bottom" height={36} />{" "}
+            {/* Przesuń legendę niżej */}
           </PieChart>
         </ResponsiveContainer>
       </div>

@@ -42,10 +42,9 @@ export default function App() {
   } | null>(null);
   const [editingIncome, setEditingIncome] = useState<{
     id: number;
-    amount: number;
+    amount: number | string;
   } | null>(null);
   const [editingExpense, setEditingExpense] = useState<any | null>(null);
-
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -411,19 +410,16 @@ export default function App() {
             <input
               type="text"
               inputMode="decimal"
+              // Używamy stringa do wyświetlania, żeby uniknąć NaN
               value={editingIncome.amount}
               onChange={(e) => {
-                // Zamień przecinek na kropkę, żeby parseFloat zadziałał poprawnie
                 const val = e.target.value.replace(",", ".");
-                // Pozwól tylko na liczby i opcjonalnie jedną kropkę
+                // Pozwalamy na pusty ciąg, cyfry i jedną kropkę
                 if (val === "" || /^\d*\.?\d*$/.test(val)) {
-                  setEditingIncome({
-                    ...editingIncome,
-                    amount: parseFloat(val) || 0, // parseFloat zamieni string na liczbę
-                  });
+                  setEditingIncome({ ...editingIncome, amount: val });
                 }
               }}
-              className="w-full border p-3 rounded-xl mb-4"
+              className="w-full border p-3 rounded-xl mb-6 outline-none focus:ring-2 focus:ring-green-500"
             />
             <div className="flex gap-2">
               <button
@@ -434,15 +430,20 @@ export default function App() {
               </button>
               <button
                 onClick={async () => {
+                  // Konwertujemy na liczbę dopiero przy kliknięciu "Zapisz"
+                  const finalAmount = parseFloat(
+                    editingIncome.amount.toString(),
+                  );
+
                   const { error } = await supabase
                     .from("incomes")
-                    .update({ amount: editingIncome.amount })
+                    .update({ amount: finalAmount })
                     .eq("id", editingIncome.id)
                     .eq("user_id", session.user.id);
 
                   if (!error) {
                     await db.incomes.update(editingIncome.id, {
-                      amount: editingIncome.amount,
+                      amount: finalAmount,
                     });
                     setEditingIncome(null);
                   } else {

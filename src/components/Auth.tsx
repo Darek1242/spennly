@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
-
+import { LegalDocs } from "./LegalDocs";
 export function Auth({ initialMode = false }: { initialMode?: boolean }) {
   const [email, setEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
@@ -11,6 +11,9 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
   const [isResetMode, setIsResetMode] = useState(false);
   const [accepted, setAccepted] = useState(false); // Stan zgody
   const navigate = useNavigate();
+  const [showLegal, setShowLegal] = useState<null | "regulamin" | "polityka">(
+    null,
+  );
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,21 +126,34 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
 
             {/* Checkbox regulaminu - tylko przy rejestracji */}
             {isSignUp && (
-              <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
+              <div className="text-sm text-gray-600 mb-6">
                 <input
                   type="checkbox"
                   checked={accepted}
                   onChange={(e) => setAccepted(e.target.checked)}
-                  className="w-4 h-4"
+                  className="mr-2"
                 />
-                <span>
-                  Akceptuję{" "}
-                  <a href="/regulamin" className="text-blue-600 underline">
-                    regulamin
-                  </a>{" "}
-                  i politykę prywatności.
-                </span>
+                Akceptuję
+                <button
+                  type="button"
+                  onClick={() => setShowLegal("regulamin")}
+                  className="text-blue-600 underline px-1"
+                >
+                  regulamin
+                </button>
+                oraz
+                <button
+                  type="button"
+                  onClick={() => setShowLegal("polityka")}
+                  className="text-blue-600 underline px-1"
+                >
+                  politykę prywatności
+                </button>
+                .
               </div>
+            )}
+            {showLegal && (
+              <LegalDocs type={showLegal} onClose={() => setShowLegal(null)} />
             )}
 
             <button className="w-full bg-green-600 text-white p-3 rounded-xl font-bold mb-4 hover:bg-green-700 transition">

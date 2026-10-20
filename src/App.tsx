@@ -15,7 +15,6 @@ import { WalletItem } from "./components/WalletItem";
 import { MonthPicker } from "./components/MonthPicker";
 import { supabase } from "./supabaseClient";
 import { Auth } from "./components/Auth";
-import { ResetPasswordModal } from "./components/ResetPasswordModal";
 registerLocale("pl", pl);
 import {
   ChevronLeft,
@@ -77,16 +76,14 @@ export default function App() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setLoading(false);
+
+      // Jeśli użytkownik przyszedł z linku resetującego hasło
       if (event === "PASSWORD_RECOVERY") {
-        localStorage.setItem("isResettingPassword", "true");
-        setShowResetPasswordModal(true);
-      }
-      // Jeśli użytkownik się zaloguje normalnie, czyścimy flagę
-      if (event === "SIGNED_IN" && !showResetPasswordModal) {
-        localStorage.removeItem("isResettingPassword");
+        setEditingPassword(true); // Otwiera modal zmiany hasła
       }
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -308,17 +305,6 @@ export default function App() {
   const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
   const totalIncome = filteredIncomes.reduce((sum, i) => sum + i.amount, 0);
   const balance = totalIncome - totalExpenses;
-
-  if (showResetPasswordModal) {
-    return (
-      <ResetPasswordModal
-        onClose={() => {
-          localStorage.removeItem("isResettingPassword");
-          setShowResetPasswordModal(false);
-        }}
-      />
-    );
-  }
 
   if (loading) return <div>Ładowanie...</div>;
   if (!session) return <Auth initialMode={initialMode} />;
@@ -720,7 +706,7 @@ export default function App() {
       )}
 
       {editingPassword && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[200]">
           <div className="bg-white p-6 rounded-3xl w-full max-w-sm">
             <h2 className="font-bold text-lg mb-4">Ustaw nowe hasło</h2>
             <input

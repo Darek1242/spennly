@@ -66,13 +66,13 @@ export default function App() {
   }, []);
 
   const syncData = async (userId: string) => {
-    // 1. Najpierw synchronizujemy PORTFELE
+    // 1. Najpierw pobierz portfele z Supabase
     let { data: wallets } = await supabase
       .from("wallets")
       .select("*")
       .eq("user_id", userId);
 
-    // Jeśli brak portfeli, stwórz domyślny
+    // Jeśli baza jest pusta, to faktycznie trzeba stworzyć portfel
     if (!wallets || wallets.length === 0) {
       const { data: newWallet } = await supabase
         .from("wallets")

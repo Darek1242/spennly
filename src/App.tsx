@@ -25,6 +25,11 @@ import {
 export default function App() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // 1. Dodajmy wyciąganie parametrów z URL
+  const params = new URLSearchParams(window.location.search);
+  const initialMode = params.get("mode") === "signup"; // Zwróci true jeśli w URL jest ?mode=signup
+
   const [activeTab, setActiveTab] = useState<"dashboard" | "reports">(
     "dashboard",
   );
@@ -280,7 +285,7 @@ export default function App() {
   const balance = totalIncome - totalExpenses;
 
   if (loading) return <div>Ładowanie...</div>;
-  if (!session) return <Auth />;
+  if (!session) return <Auth initialMode={initialMode} />;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">

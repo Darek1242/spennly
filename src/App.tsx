@@ -25,6 +25,7 @@ import {
 export default function App() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
 
   // 1. Dodajmy wyciąganie parametrów z URL
   const params = new URLSearchParams(window.location.search);
@@ -52,6 +53,18 @@ export default function App() {
   const [editingExpense, setEditingExpense] = useState<any | null>(null);
   const [editingPassword, setEditingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // Ważne: To musi być adres Twojej aplikacji (np. https://app.spennly.pl)
+      redirectTo: `${window.location.origin}/`,
+    });
+    if (error) alert(error.message);
+    else alert("Sprawdź e-mail!");
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -61,11 +74,8 @@ export default function App() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
       if (event === "PASSWORD_RECOVERY") {
-        // Użytkownik kliknął w link resetujący hasło
-        // Tutaj musisz ustawić stan, który pokaże modal z wpisywaniem nowego hasła
-        setEditingPassword(true); // Musisz stworzyć taki stan
+        setShowResetPasswordModal(true);
       }
     });
 

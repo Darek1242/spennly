@@ -15,6 +15,7 @@ import { WalletItem } from "./components/WalletItem";
 import { MonthPicker } from "./components/MonthPicker";
 import { supabase } from "./supabaseClient";
 import { Auth } from "./components/Auth";
+import { ResetPasswordModal } from "./components/ResetPasswordModal";
 registerLocale("pl", pl);
 import {
   ChevronLeft,
@@ -53,7 +54,9 @@ export default function App() {
   const [editingExpense, setEditingExpense] = useState<any | null>(null);
   const [editingPassword, setEditingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
-  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(() => {
+    return localStorage.getItem("isResettingPassword") === "true";
+  });
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +78,12 @@ export default function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") {
+        localStorage.setItem("isResettingPassword", "true");
         setShowResetPasswordModal(true);
+      }
+      // Jeśli użytkownik się zaloguje normalnie, czyścimy flagę
+      if (event === "SIGNED_IN" && !showResetPasswordModal) {
+        localStorage.removeItem("isResettingPassword");
       }
     });
 
@@ -300,6 +308,17 @@ export default function App() {
   const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
   const totalIncome = filteredIncomes.reduce((sum, i) => sum + i.amount, 0);
   const balance = totalIncome - totalExpenses;
+
+  if (showResetPasswordModal) {
+    return (
+      <ResetPasswordModal
+        onClose={() => {
+          localStorage.removeItem("isResettingPassword");
+          setShowResetPasswordModal(false);
+        }}
+      />
+    );
+  }
 
   if (loading) return <div>Ładowanie...</div>;
   if (!session) return <Auth initialMode={initialMode} />;

@@ -50,6 +50,8 @@ export default function App() {
     amount: number | string;
   } | null>(null);
   const [editingExpense, setEditingExpense] = useState<any | null>(null);
+  const [editingPassword, setEditingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -58,8 +60,13 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      if (event === "PASSWORD_RECOVERY") {
+        // Użytkownik kliknął w link resetujący hasło
+        // Tutaj musisz ustawić stan, który pokaże modal z wpisywaniem nowego hasła
+        setEditingPassword(true); // Musisz stworzyć taki stan
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -678,6 +685,35 @@ export default function App() {
               className="w-full mt-6 p-3 bg-gray-800 text-white rounded-2xl font-bold hover:bg-gray-900 transition"
             >
               Zamknij
+            </button>
+          </div>
+        </div>
+      )}
+
+      {editingPassword && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-3xl w-full max-w-sm">
+            <h2 className="font-bold text-lg mb-4">Ustaw nowe hasło</h2>
+            <input
+              type="password"
+              placeholder="Nowe hasło"
+              className="w-full border p-3 rounded-xl mb-4"
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <button
+              onClick={async () => {
+                const { error } = await supabase.auth.updateUser({
+                  password: newPassword,
+                });
+                if (error) alert(error.message);
+                else {
+                  alert("Hasło zmienione!");
+                  setEditingPassword(false);
+                }
+              }}
+              className="w-full bg-blue-600 text-white p-3 rounded-xl font-bold"
+            >
+              Zapisz hasło
             </button>
           </div>
         </div>

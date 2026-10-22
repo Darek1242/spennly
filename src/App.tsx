@@ -29,7 +29,6 @@ export default function App() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   // 1. Dodajmy wyciąganie parametrów z URL
   const params = new URLSearchParams(window.location.search);
@@ -70,24 +69,6 @@ export default function App() {
     });
     if (error) alert(error.message);
     else alert("Sprawdź e-mail!");
-  };
-
-  useEffect(() => {
-    const handler = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  const handleInstall = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choice: any) => {
-        setDeferredPrompt(null);
-      });
-    }
   };
 
   useEffect(() => {
@@ -380,14 +361,6 @@ export default function App() {
           </button>
         </div>
       </div>
-
-      {/* PRZYCISK POMOCY */}
-      <button
-        onClick={() => setIsHelpOpen(true)}
-        className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition text-gray-600"
-      >
-        <HelpCircle size={20} />
-      </button>
 
       {/* Pasek nawigacji - Zakładki + Data + Wyloguj */}
       <div className="max-w-6xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center bg-white p-2 rounded-2xl shadow-sm border border-gray-100 gap-4">
@@ -745,13 +718,7 @@ export default function App() {
         </div>
       )}
 
-      {isHelpOpen && (
-        <HelpView
-          onClose={() => setIsHelpOpen(false)}
-          deferredPrompt={deferredPrompt}
-          handleInstall={handleInstall}
-        />
-      )}
+      {isHelpOpen && <HelpView onClose={() => setIsHelpOpen(false)} />}
 
       {editingPassword && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[200]">

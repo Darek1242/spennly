@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-export function HelpView({
-  onClose,
-  deferredPrompt,
-  handleInstall,
-}: {
-  onClose: () => void;
-  deferredPrompt: any;
-  handleInstall: () => void;
-}) {
+export function HelpView({ onClose }: { onClose: () => void }) {
   const sections = [
     {
       title: "Zarządzanie Portfelami",
@@ -30,30 +22,6 @@ export function HelpView({
       title: "Zarządzanie subskrypcją",
       content:
         "Kliknij ikonę ustawień (zębatkę) w pasku portfeli. Tam znajdziesz przycisk do zarządzania subskrypcją w Stripe, gdzie w każdej chwili możesz anulować plan lub pobrać fakturę.",
-    },
-    {
-      title: "Zainstaluj na pulpicie",
-      content: (
-        <>
-          <p className="mb-3">
-            Zainstaluj Spennly na telefonie, aby mieć do niej dostęp jak do
-            natywnej aplikacji!
-          </p>
-          {deferredPrompt ? (
-            <button
-              onClick={handleInstall}
-              className="w-full bg-green-600 text-white p-2 rounded-xl font-bold"
-            >
-              Zainstaluj Spennly
-            </button>
-          ) : (
-            <p className="text-gray-400 text-xs italic">
-              Jeśli nie widzisz przycisku, użyj opcji "Dodaj do ekranu głównego"
-              w menu przeglądarki.
-            </p>
-          )}
-        </>
-      ),
     },
   ];
 

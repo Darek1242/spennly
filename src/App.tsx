@@ -15,17 +15,21 @@ import { WalletItem } from "./components/WalletItem";
 import { MonthPicker } from "./components/MonthPicker";
 import { supabase } from "./supabaseClient";
 import { Auth } from "./components/Auth";
+import { HelpView } from "./components/HelpView";
+
 registerLocale("pl", pl);
 import {
   ChevronLeft,
   ChevronRight,
   Wallet as WalletIcon,
   Settings,
+  HelpCircle,
 } from "lucide-react";
 export default function App() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   // 1. Dodajmy wyciąganie parametrów z URL
   const params = new URLSearchParams(window.location.search);
@@ -41,6 +45,7 @@ export default function App() {
   const [isPremium, setIsPremium] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [newWalletName, setNewWalletName] = useState("");
   const [editingWallet, setEditingWallet] = useState<{
     id: number;
@@ -65,6 +70,24 @@ export default function App() {
     });
     if (error) alert(error.message);
     else alert("Sprawdź e-mail!");
+  };
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choice: any) => {
+        setDeferredPrompt(null);
+      });
+    }
   };
 
   useEffect(() => {
@@ -312,15 +335,17 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       {/* GÓRNY PASEK - SELEKTOR PORTFELI */}
-      <div className="max-w-6xl mx-auto mb-4 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 w-full md:w-auto">
-          <div className="bg-blue-600 p-2 rounded-xl text-white">
+      {/* GÓRNY PASEK - SELEKTOR PORTFELI I IKONY */}
+      <div className="max-w-6xl mx-auto mb-4 flex justify-between items-center gap-2 px-2">
+        {/* LEWA STRONA: Selektor portfeli - z ograniczeniem szerokości */}
+        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 max-w-[70%]">
+          <div className="bg-blue-600 p-2 rounded-xl text-white shrink-0">
             <WalletIcon size={20} />
           </div>
           <select
             value={activeWalletId || ""}
             onChange={(e) => setActiveWalletId(Number(e.target.value))}
-            className="font-bold text-gray-800 outline-none bg-transparent cursor-pointer pr-4"
+            className="font-bold text-gray-800 outline-none bg-transparent cursor-pointer truncate"
           >
             {allWallets?.map((w) => (
               <option key={w.id} value={w.id}>
@@ -328,26 +353,41 @@ export default function App() {
               </option>
             ))}
           </select>
-          {!isPremium && (
-            <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded-lg font-bold">
+          {!isPremium ? (
+            <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded-lg font-bold shrink-0">
               FREE
             </span>
-          )}
-          {isPremium && (
-            <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-lg font-bold">
+          ) : (
+            <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-lg font-bold shrink-0">
               PREMIUM
             </span>
           )}
         </div>
 
-        {/* PRZYCISK USTAWIEŃ - TERAZ DLA WSZYSTKICH */}
-        <button
-          onClick={() => setIsWalletModalOpen(true)}
-          className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition"
-        >
-          <Settings size={20} className="text-gray-600" />
-        </button>
+        {/* PRAWA STRONA: Przyciski - stała szerokość */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition text-gray-600"
+          >
+            <HelpCircle size={20} />
+          </button>
+          <button
+            onClick={() => setIsWalletModalOpen(true)}
+            className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition"
+          >
+            <Settings size={20} className="text-gray-600" />
+          </button>
+        </div>
       </div>
+
+      {/* PRZYCISK POMOCY */}
+      <button
+        onClick={() => setIsHelpOpen(true)}
+        className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition text-gray-600"
+      >
+        <HelpCircle size={20} />
+      </button>
 
       {/* Pasek nawigacji - Zakładki + Data + Wyloguj */}
       <div className="max-w-6xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center bg-white p-2 rounded-2xl shadow-sm border border-gray-100 gap-4">
@@ -703,6 +743,14 @@ export default function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {isHelpOpen && (
+        <HelpView
+          onClose={() => setIsHelpOpen(false)}
+          deferredPrompt={deferredPrompt}
+          handleInstall={handleInstall}
+        />
       )}
 
       {editingPassword && (

@@ -15,7 +15,6 @@ import { WalletItem } from "./components/WalletItem";
 import { MonthPicker } from "./components/MonthPicker";
 import { supabase } from "./supabaseClient";
 import { Auth } from "./components/Auth";
-import { HelpView } from "./components/HelpView";
 
 registerLocale("pl", pl);
 import {
@@ -348,7 +347,9 @@ export default function App() {
         {/* PRAWA STRONA: Przyciski - stała szerokość */}
         <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={() => setIsHelpOpen(true)}
+            onClick={() =>
+              window.open("https://spennly.pl/#instrukcja", "_blank")
+            }
             className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition text-gray-600"
           >
             <HelpCircle size={20} />
@@ -717,8 +718,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-      {isHelpOpen && <HelpView onClose={() => setIsHelpOpen(false)} />}
 
       {editingPassword && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[200]">

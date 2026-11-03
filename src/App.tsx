@@ -160,6 +160,17 @@ export default function App() {
     }
   }, [session]);
 
+  const allWallets = useLiveQuery(() => db.wallets.toArray());
+  const defaultWalletId = allWallets?.[0]?.id;
+
+  useEffect(() => {
+    if (!isPremium && activeWalletId !== defaultWalletId && defaultWalletId) {
+      // Jeśli użytkownik przestał być Premium,
+      // a miał wybrany inny portfel niż główny -> wymuś powrót do głównego
+      setActiveWalletId(defaultWalletId);
+    }
+  }, [isPremium, activeWalletId, defaultWalletId]);
+
   const handleCheckout = async (
     priceId: string,
     isSubscription: boolean = false,
@@ -266,7 +277,6 @@ export default function App() {
   const year = currentDate.getFullYear();
 
   // AKTUALIZACJA QUERY DLA DEXIE (filtrowanie po portfelu)
-  const allWallets = useLiveQuery(() => db.wallets.toArray());
   const expenses = useLiveQuery(
     () =>
       db.expenses

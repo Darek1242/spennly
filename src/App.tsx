@@ -15,6 +15,7 @@ import { WalletItem } from "./components/WalletItem";
 import { MonthPicker } from "./components/MonthPicker";
 import { supabase } from "./supabaseClient";
 import { Auth } from "./components/Auth";
+import { LoadingSpinner } from "./components/LoadingSpinner";
 registerLocale("pl", pl);
 import {
   ChevronLeft,
@@ -25,6 +26,7 @@ import {
   Trash2,
   Edit2,
   X,
+  ChevronDown,
 } from "lucide-react";
 export default function App() {
   const [session, setSession] = useState<any>(null);
@@ -42,6 +44,8 @@ export default function App() {
 
   // NOWE STANY DLA PORTFELI
   const [activeWalletId, setActiveWalletId] = useState<number | null>(null);
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
@@ -165,6 +169,8 @@ export default function App() {
   }, [session]);
 
   const allWallets = useLiveQuery(() => db.wallets.toArray());
+  const activeWallet = allWallets?.find((w) => w.id === activeWalletId);
+
   useEffect(() => {
     if (!isPremium && allWallets && allWallets.length > 0) {
       const mainWallet = allWallets.sort(
@@ -323,41 +329,52 @@ export default function App() {
   const totalIncome = filteredIncomes.reduce((sum, i) => sum + i.amount, 0);
   const balance = totalIncome - totalExpenses;
 
-  if (loading) return <div>Ładowanie...</div>;
+  if (loading) return <LoadingSpinner />;
   if (!session) return <Auth initialMode={initialMode} />;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       {/* GÓRNY PASEK - SELEKTOR PORTFELI */}
-      {/* GÓRNY PASEK - SELEKTOR PORTFELI I IKONY */}
+
       <div className="max-w-6xl mx-auto mb-4 flex justify-between items-center gap-2 px-2">
         {/* LEWA STRONA: Selektor portfeli - z ograniczeniem szerokości */}
         <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 max-w-[70%]">
           <div className="bg-blue-600 p-2 rounded-xl text-white shrink-0">
             <WalletIcon size={20} />
           </div>
-          <select
-            value={activeWalletId || ""}
-            onChange={(e) => {
-              const selectedId = Number(e.target.value);
-              // Znajdź wybrany portfel
-              const isMain =
-                allWallets?.findIndex((w) => w.id === selectedId) === 0; // Założenie: pierwszy portfel jest darmowy
 
-              if (!isPremium && !isMain) {
-                setIsPremiumModalOpen(true); // Otwiera nowy ładny modal
-              } else {
-                setActiveWalletId(selectedId);
-              }
-            }}
-            className="font-bold text-gray-800 outline-none bg-transparent cursor-pointer truncate"
-          >
-            {allWallets?.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-2 font-bold text-gray-800 outline-none bg-transparent cursor-pointer"
+            >
+              {activeWallet?.name || "Wybierz portfel"}
+              <ChevronDown size={16} />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute top-12 left-0 w-48 bg-white border border-gray-100 shadow-xl rounded-2xl p-2 z-[60]">
+                {allWallets?.map((w) => (
+                  <button
+                    key={w.id}
+                    onClick={() => {
+                      const isMain =
+                        allWallets.findIndex((x) => x.id === w.id) === 0;
+                      if (!isPremium && !isMain) {
+                        setIsPremiumModalOpen(true);
+                      } else {
+                        setActiveWalletId(w.id!);
+                      }
+                      setIsDropdownOpen(false);
+                    }}
+                    className="w-full text-left p-3 hover:bg-gray-50 rounded-xl font-medium"
+                  >
+                    {w.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {!isPremium ? (
             <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded-lg font-bold shrink-0">
               FREE
@@ -379,6 +396,7 @@ export default function App() {
           >
             <HelpCircle size={20} />
           </button>
+
           <button
             onClick={() => setIsWalletModalOpen(true)}
             className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition"
@@ -414,6 +432,7 @@ export default function App() {
           >
             <ChevronLeft size={20} />
           </button>
+
           <MonthPicker currentDate={currentDate} onChange={setCurrentDate} />
           <button
             onClick={() => setCurrentDate(new Date(year, month + 1))}
@@ -496,6 +515,7 @@ export default function App() {
               </button>
               <button
                 onClick={async () => {
+                  setLoading(true);
                   // Konwertujemy na liczbę dopiero przy kliknięciu "Zapisz"
                   const finalAmount = parseFloat(
                     editingIncome.amount.toString(),
@@ -514,10 +534,15 @@ export default function App() {
                   } else {
                     alert("Błąd: " + error.message);
                   }
+                  setLoading(false);
                 }}
-                className="flex-1 p-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition"
+                className="flex-1 p-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition flex items-center justify-center gap-2"
               >
-                Zapisz
+                {loading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  "Zapisz"
+                )}
               </button>
             </div>
           </div>
@@ -550,6 +575,7 @@ export default function App() {
               </button>
               <button
                 onClick={async () => {
+                  setLoading(true);
                   const amount = parseFloat(editingExpense.amount);
                   const { error } = await supabase
                     .from("expenses")
@@ -564,10 +590,15 @@ export default function App() {
                   } else {
                     alert("Błąd: " + error.message);
                   }
+                  setLoading(false);
                 }}
-                className="flex-1 p-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition"
+                className="flex-1 p-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition flex items-center justify-center gap-2"
               >
-                Zapisz
+                {loading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  "Zapisz"
+                )}
               </button>
             </div>
           </div>
@@ -595,15 +626,21 @@ export default function App() {
               </button>
               <button
                 onClick={async () => {
+                  setLoading(true);
                   await handleRenameWallet(
                     editingWallet.id,
                     editingWallet.name,
                   );
                   setEditingWallet(null);
+                  setLoading(false);
                 }}
-                className="flex-1 p-3 bg-blue-600 text-white rounded-xl font-bold"
+                className="flex-1 p-3 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2"
               >
-                OK
+                {loading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  "OK"
+                )}
               </button>
             </div>
           </div>
@@ -815,6 +852,7 @@ export default function App() {
             />
             <button
               onClick={async () => {
+                setLoading(true);
                 const { error } = await supabase.auth.updateUser({
                   password: newPassword,
                 });
@@ -823,10 +861,15 @@ export default function App() {
                   alert("Hasło zmienione!");
                   setEditingPassword(false);
                 }
+                setLoading(false);
               }}
-              className="w-full bg-blue-600 text-white p-3 rounded-xl font-bold"
+              className="w-full bg-blue-600 text-white p-3 rounded-xl font-bold flex items-center justify-center gap-2"
             >
-              Zapisz hasło
+              {loading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                "Zapisz hasło"
+              )}
             </button>
           </div>
         </div>

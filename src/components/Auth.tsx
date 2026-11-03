@@ -11,6 +11,7 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
   const [isResetMode, setIsResetMode] = useState(false);
   const [accepted, setAccepted] = useState(false); // Stan zgody
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [showLegal, setShowLegal] = useState<null | "regulamin" | "polityka">(
     null,
@@ -18,17 +19,21 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     if (isSignUp) {
       if (email !== confirmEmail) {
         alert("Adresy e-mail nie są takie same!");
+        setLoading(false);
         return;
       }
       if (password !== confirmPassword) {
         alert("Hasła nie są takie same!");
+        setLoading(false);
         return;
       }
       if (!accepted) {
         alert("Musisz zaakceptować regulamin!");
+        setLoading(false);
         return;
       }
 
@@ -57,6 +62,7 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
         navigate("/");
       }
     }
+    setLoading(false);
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -89,7 +95,7 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
       )}
       <form
         onSubmit={isResetMode ? handleResetPassword : handleAuth}
-        className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 w-full max-w-sm"
+        className="bg-white p-10 rounded-3xl shadow-xl w-full max-w-sm border border-gray-100 transition-all transform hover:scale-[1.01]"
       >
         {isResetMode ? (
           <>
@@ -116,27 +122,27 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
           </>
         ) : (
           <>
-            <h2 className="text-2xl font-bold mb-6 text-center">
-              {isSignUp ? "Zarejestruj się w Spennly" : "Witaj w Spennly"}
+            <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-800">
+              {isSignUp ? "Dołącz do Spennly" : "Witaj ponownie"}
             </h2>
             <input
-              className="w-full border p-3 rounded-xl mb-4 bg-gray-50 outline-none"
-              placeholder="Email"
+              className="w-full border-2 border-gray-100 p-4 rounded-2xl mb-4 bg-gray-50 focus:border-blue-500 outline-none transition"
+              placeholder="Adres e-mail"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             {isSignUp && (
               <input
-                className="w-full border p-3 rounded-xl mb-4 bg-gray-50 outline-none"
-                placeholder="Powtórz Email"
+                className="w-full border-2 border-gray-100 p-4 rounded-2xl mb-4 bg-gray-50 focus:border-blue-500 outline-none transition"
+                placeholder="Powtórz adres e-mail"
                 type="email"
                 value={confirmEmail}
                 onChange={(e) => setConfirmEmail(e.target.value)}
               />
             )}
             <input
-              className="w-full border p-3 rounded-xl mb-6 bg-gray-50 outline-none"
+              className="w-full border-2 border-gray-100 p-4 rounded-2xl mb-4 bg-gray-50 focus:border-blue-500 outline-none transition"
               placeholder="Hasło"
               type="password"
               value={password}
@@ -144,7 +150,7 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
             />
             {isSignUp && (
               <input
-                className="w-full border p-3 rounded-xl mb-6 bg-gray-50 outline-none"
+                className="w-full border-2 border-gray-100 p-4 rounded-2xl mb-6 bg-gray-50 focus:border-blue-500 outline-none transition"
                 placeholder="Powtórz hasło"
                 type="password"
                 value={confirmPassword}
@@ -184,11 +190,15 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
               <LegalDocs type={showLegal} onClose={() => setShowLegal(null)} />
             )}
 
-            <button className="w-full bg-green-600 text-white p-3 rounded-xl font-bold mb-4 hover:bg-green-700 transition">
-              {isSignUp ? "Zarejestruj się" : "Zaloguj się"}
+            <button className="w-full bg-green-600 text-white p-4 rounded-2xl font-bold text-lg hover:bg-green-700 transition shadow-lg shadow-green-200 mb-4">
+              {loading
+                ? "Ładowanie..."
+                : isSignUp
+                  ? "Zarejestruj się"
+                  : "Zaloguj się"}
             </button>
             <p
-              className="text-center text-sm cursor-pointer text-gray-500"
+              className="text-center text-sm text-gray-400 mt-6 cursor-pointer hover:text-gray-600"
               onClick={() => setIsSignUp(!isSignUp)}
             >
               {isSignUp

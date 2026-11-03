@@ -44,8 +44,15 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
         email,
         password,
       });
+
       if (error) {
-        setErrorMsg("Nieprawidłowy e-mail lub hasło.");
+        if (error.message === "Invalid login credentials") {
+          setErrorMsg("Nieprawidłowy e-mail lub hasło.");
+        } else if (error.message.includes("User not found")) {
+          setErrorMsg("Konto o tym adresie e-mail nie istnieje.");
+        } else {
+          setErrorMsg(error.message);
+        }
       } else {
         navigate("/");
       }

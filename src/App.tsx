@@ -729,7 +729,7 @@ export default function App() {
               {/* Subskrypcja - wyróżniona */}
               <button
                 onClick={() =>
-                  handleCheckout("price_1UDmMFRyZ488ciU9nL0kJ24e", true)
+                  handleCheckout("price_1UX0WeRvPpCMDXU634Zkg5pf", true)
                 }
                 className="w-full p-4 border-2 border-blue-600 rounded-2xl text-blue-600 font-bold hover:bg-blue-50 transition"
               >
@@ -739,7 +739,7 @@ export default function App() {
               {/* Pakiety BLIK */}
               <button
                 onClick={() =>
-                  handleCheckout("price_1UKhNJRyZ488ciU9VwgkY7ZL", false)
+                  handleCheckout("price_1UX0Y1RvPpCMDXU6XTttyo5s", false)
                 }
                 className="w-full p-4 bg-gray-50 rounded-2xl font-bold hover:bg-gray-100 transition text-gray-700"
               >
@@ -747,7 +747,7 @@ export default function App() {
               </button>
               <button
                 onClick={() =>
-                  handleCheckout("price_1UKhNtRyZ488ciU9vnunbhdR", false)
+                  handleCheckout("price_1UX0YTRvPpCMDXU6Lj2xZjEt", false)
                 }
                 className="w-full p-4 bg-gray-50 rounded-2xl font-bold hover:bg-gray-100 transition text-gray-700"
               >
@@ -755,7 +755,7 @@ export default function App() {
               </button>
               <button
                 onClick={() =>
-                  handleCheckout("price_1UKhOTRyZ488ciU99VVeBvfN", false)
+                  handleCheckout("price_1UX0YyRvPpCMDXU6kPkSOmri", false)
                 }
                 className="w-full p-4 bg-gray-50 rounded-2xl font-bold hover:bg-gray-100 transition text-gray-700"
               >

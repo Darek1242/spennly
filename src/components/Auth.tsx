@@ -10,6 +10,7 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
   const [isSignUp, setIsSignUp] = useState(initialMode);
   const [isResetMode, setIsResetMode] = useState(false);
   const [accepted, setAccepted] = useState(false); // Stan zgody
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const [showLegal, setShowLegal] = useState<null | "regulamin" | "polityka">(
     null,
@@ -36,15 +37,18 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
         password,
         options: { emailRedirectTo: window.location.origin },
       });
-      if (error) alert(error.message);
+      if (error) setErrorMsg(error.message);
       else alert("Sprawdź e-mail, aby potwierdzić konto!");
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      if (error) alert(error.message);
-      else navigate("/");
+      if (error) {
+        setErrorMsg("Nieprawidłowy e-mail lub hasło.");
+      } else {
+        navigate("/");
+      }
     }
   };
 
@@ -53,12 +57,29 @@ export function Auth({ initialMode = false }: { initialMode?: boolean }) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`, // Musisz mieć taką stronę w apce
     });
-    if (error) alert(error.message);
+    if (error) setErrorMsg(error.message);
     else alert("Sprawdź e-mail, aby zresetować hasło!");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      {errorMsg && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[200]">
+          <div className="bg-white p-8 rounded-3xl w-full max-w-sm text-center shadow-2xl">
+            <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <h2 className="font-bold text-xl mb-2 text-gray-800">Ups!</h2>
+            <p className="text-gray-600 mb-8 text-sm">{errorMsg}</p>
+            <button
+              onClick={() => setErrorMsg(null)}
+              className="w-full bg-gray-800 text-white p-4 rounded-2xl font-bold hover:bg-black transition"
+            >
+              Rozumiem
+            </button>
+          </div>
+        </div>
+      )}
       <form
         onSubmit={isResetMode ? handleResetPassword : handleAuth}
         className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 w-full max-w-sm"

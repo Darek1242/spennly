@@ -15,7 +15,6 @@ import { WalletItem } from "./components/WalletItem";
 import { MonthPicker } from "./components/MonthPicker";
 import { supabase } from "./supabaseClient";
 import { Auth } from "./components/Auth";
-
 registerLocale("pl", pl);
 import {
   ChevronLeft,
@@ -23,6 +22,9 @@ import {
   Wallet as WalletIcon,
   Settings,
   HelpCircle,
+  Trash2,
+  Edit2,
+  X,
 } from "lucide-react";
 export default function App() {
   const [session, setSession] = useState<any>(null);
@@ -59,6 +61,8 @@ export default function App() {
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(() => {
     return localStorage.getItem("isResettingPassword") === "true";
   });
+
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,15 +165,17 @@ export default function App() {
   }, [session]);
 
   const allWallets = useLiveQuery(() => db.wallets.toArray());
-  const defaultWalletId = allWallets?.[0]?.id;
-
   useEffect(() => {
-    if (!isPremium && activeWalletId !== defaultWalletId && defaultWalletId) {
-      // Jeśli użytkownik przestał być Premium,
-      // a miał wybrany inny portfel niż główny -> wymuś powrót do głównego
-      setActiveWalletId(defaultWalletId);
+    if (!isPremium && allWallets && allWallets.length > 0) {
+      const mainWallet = allWallets.sort(
+        (a, b) => (a.id || 0) - (b.id || 0),
+      )[0];
+      // Zmieniamy tylko aktywny portfel, bez pokazywania alertu
+      if (activeWalletId !== mainWallet.id) {
+        setActiveWalletId(mainWallet.id || null);
+      }
     }
-  }, [isPremium, activeWalletId, defaultWalletId]);
+  }, [isPremium, allWallets]);
 
   const handleCheckout = async (
     priceId: string,
@@ -241,9 +247,7 @@ export default function App() {
   const handleAddWallet = async () => {
     // Sprawdzenie Premium: darmowy użytkownik może mieć max 1 portfel (tylko ten domyślny)
     if (!isPremium && (allWallets?.length || 0) >= 1) {
-      alert(
-        "Wersja darmowa pozwala tylko na jeden portfel. Przejdź na Premium!",
-      );
+      setIsPremiumModalOpen(true);
       return;
     }
 
@@ -334,7 +338,18 @@ export default function App() {
           </div>
           <select
             value={activeWalletId || ""}
-            onChange={(e) => setActiveWalletId(Number(e.target.value))}
+            onChange={(e) => {
+              const selectedId = Number(e.target.value);
+              // Znajdź wybrany portfel
+              const isMain =
+                allWallets?.findIndex((w) => w.id === selectedId) === 0; // Założenie: pierwszy portfel jest darmowy
+
+              if (!isPremium && !isMain) {
+                setIsPremiumModalOpen(true); // Otwiera nowy ładny modal
+              } else {
+                setActiveWalletId(selectedId);
+              }
+            }}
             className="font-bold text-gray-800 outline-none bg-transparent cursor-pointer truncate"
           >
             {allWallets?.map((w) => (
@@ -491,7 +506,6 @@ export default function App() {
                     .update({ amount: finalAmount })
                     .eq("id", editingIncome.id)
                     .eq("user_id", session.user.id);
-
                   if (!error) {
                     await db.incomes.update(editingIncome.id, {
                       amount: finalAmount,
@@ -599,9 +613,18 @@ export default function App() {
       {isWalletModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl">
-            <h2 className="font-bold text-xl mb-6 text-gray-800">
-              Twoje Portfele
-            </h2>
+            {/* NAGŁÓWEK Z KRZYŻYKIEM */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="font-bold text-xl text-gray-800">
+                Twoje Portfele
+              </h2>
+              <button
+                onClick={() => setIsWalletModalOpen(false)}
+                className="p-1 hover:bg-gray-100 rounded-full transition"
+              >
+                <X size={24} className="text-gray-500" />
+              </button>
+            </div>
 
             {/* Lista portfeli */}
             <div className="space-y-3 mb-6">
@@ -620,6 +643,27 @@ export default function App() {
                       );
                     }
                   }}
+                  deleteButton={
+                    allWallets.length > 1 && (
+                      <button
+                        onClick={async () => {
+                          if (confirm("Czy na pewno usunąć portfel?")) {
+                            await supabase
+                              .from("wallets")
+                              .delete()
+                              .eq("id", w.id);
+                            await db.wallets.delete(w.id!);
+                            setActiveWalletId(
+                              allWallets.find((x) => x.id !== w.id)?.id || null,
+                            );
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-700 p-2"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    )
+                  }
                 />
               ))}
             </div>
@@ -666,7 +710,7 @@ export default function App() {
 
             <button
               onClick={() => setIsWalletModalOpen(false)}
-              className="w-full p-3 bg-gray-800 text-white rounded-2xl font-bold hover:bg-gray-900 transition"
+              className="w-full mt-6 p-3 bg-gray-100 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition"
             >
               Zamknij
             </button>
@@ -722,6 +766,36 @@ export default function App() {
             <button
               onClick={() => setIsPackageModalOpen(false)}
               className="w-full mt-6 p-3 bg-gray-800 text-white rounded-2xl font-bold hover:bg-gray-900 transition"
+            >
+              Zamknij
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isPremiumModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[200]">
+          <div className="bg-white p-8 rounded-3xl w-full max-w-sm text-center shadow-2xl">
+            <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">🚀</span>
+            </div>
+            <h2 className="font-bold text-xl mb-2">Wersja Premium</h2>
+            <p className="text-gray-600 mb-8 text-sm">
+              Aby korzystać z wielu portfeli, przejdź na plan Premium i ciesz
+              się pełnią możliwości.
+            </p>
+            <button
+              onClick={() => {
+                setIsPremiumModalOpen(false);
+                setIsPackageModalOpen(true);
+              }}
+              className="w-full bg-blue-600 text-white p-4 rounded-2xl font-bold mb-3 hover:bg-blue-700 transition"
+            >
+              Zobacz pakiety
+            </button>
+            <button
+              onClick={() => setIsPremiumModalOpen(false)}
+              className="w-full p-4 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 transition"
             >
               Zamknij
             </button>

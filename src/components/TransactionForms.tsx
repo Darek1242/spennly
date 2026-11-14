@@ -5,7 +5,7 @@ import { pl } from "date-fns/locale/pl";
 import { db } from "../db";
 import { supabase } from "../supabaseClient";
 import { Wallet, Plus } from "lucide-react";
-
+import { CategorySelect } from "./CategorySelect";
 registerLocale("pl", pl);
 
 export function TransactionForms({
@@ -130,18 +130,11 @@ export function TransactionForms({
           className={inputClass + " mb-3"}
         />
         <div className="flex gap-2 mb-3">
-          <select
+          <CategorySelect
+            categories={categories}
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className={inputClass}
-          >
-            <option value="">Kategoria...</option>
-            {categories?.map((c) => (
-              <option key={c.id} value={c.name}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedCategory}
+          />
           <DatePicker
             selected={expenseDate}
             onChange={(d: Date | null) => d && setExpenseDate(d)}

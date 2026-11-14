@@ -27,6 +27,7 @@ import {
   Edit2,
   X,
   ChevronDown,
+  Plus,
 } from "lucide-react";
 export default function App() {
   const [session, setSession] = useState<any>(null);
@@ -67,6 +68,7 @@ export default function App() {
   });
 
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -451,6 +453,13 @@ export default function App() {
         </button>
       </div>
 
+      <button
+        onClick={() => setIsTransactionModalOpen(true)}
+        className="md:hidden w-full bg-blue-600 text-white p-4 rounded-2xl font-bold shadow-lg mb-6 flex items-center justify-center gap-2"
+      >
+        <Plus size={20} /> Dodaj operację
+      </button>
+
       {activeTab === "dashboard" ? (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-6xl mx-auto">
           <div className="flex flex-col gap-6">
@@ -470,13 +479,15 @@ export default function App() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <TransactionForms
-              categories={categories || []}
-              userId={session.user.id}
-              walletId={activeWalletId}
-            />
-            <CategoryManager walletId={activeWalletId} />
-
+            {/* 2. Formularz desktopowy */}
+            <div className="hidden md:flex flex-col gap-6">
+              <TransactionForms
+                categories={categories || []}
+                userId={session.user.id}
+                walletId={activeWalletId}
+              />
+              <CategoryManager walletId={activeWalletId} />
+            </div>
             <TransactionList
               expenses={filteredExpenses}
               onEditExpense={setEditingExpense}
@@ -748,6 +759,31 @@ export default function App() {
             <button
               onClick={() => setIsWalletModalOpen(false)}
               className="w-full mt-6 p-3 bg-gray-100 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition"
+            >
+              Zamknij
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Transakcji mobilny */}
+      {isTransactionModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl">
+            <h2 className="font-bold text-xl mb-4">Dodaj wydatek</h2>
+
+            {/* Tutaj używamy Twoich oryginalnych komponentów */}
+            <TransactionForms
+              categories={categories || []}
+              userId={session.user.id}
+              walletId={activeWalletId}
+            />
+            <div className="mt-4">
+              <CategoryManager walletId={activeWalletId} />
+            </div>
+            <button
+              onClick={() => setIsTransactionModalOpen(false)}
+              className="w-full mt-6 p-3 bg-gray-100 rounded-xl font-bold text-gray-600"
             >
               Zamknij
             </button>

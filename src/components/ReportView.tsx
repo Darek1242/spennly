@@ -3,6 +3,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db";
+import { registerLocale } from "react-datepicker";
+import { pl } from "date-fns/locale/pl";
+registerLocale("pl", pl);
 import {
   PieChart,
   Pie,
@@ -47,19 +50,24 @@ export function ReportView({ walletId }: { walletId: number | null }) {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
+      {/* Pasek zakresu - wyśrodkowany */}
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6 flex justify-center">
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <span className="font-bold text-gray-800">Zakres:</span>
           <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
             <DatePicker
               selected={startDate}
               onChange={(d: Date | null) => d && setStartDate(d)}
+              dateFormat="dd/MM/yyyy"
+              locale="pl"
               className="bg-gray-50 p-3 rounded-xl w-32 text-center cursor-pointer"
             />
             <span className="hidden sm:block">—</span>
             <DatePicker
               selected={endDate}
               onChange={(d: Date | null) => d && setEndDate(d)}
+              dateFormat="dd/MM/yyyy"
+              locale="pl"
               className="bg-gray-50 p-3 rounded-xl w-32 text-center cursor-pointer"
             />
           </div>

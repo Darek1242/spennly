@@ -4,10 +4,18 @@ import { db } from "../db";
 import { X } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
-export function CategoryManager({ walletId }: { walletId: number | null }) {
+export function CategoryManager({
+  walletId,
+  isPremium,
+  setIsPremiumRequiredOpen,
+}: {
+  walletId: number | null;
+  isPremium: boolean;
+  setIsPremiumRequiredOpen: (isOpen: boolean) => void;
+}) {
   const [newCategory, setNewCategory] = useState("");
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
-  // Pobieramy tylko kategorie dla aktywnego portfela
   const categories = useLiveQuery(
     () =>
       db.categories
@@ -18,7 +26,14 @@ export function CategoryManager({ walletId }: { walletId: number | null }) {
   );
 
   const addCategory = async () => {
+    // 1. Sprawdzenie limitu (6 kategorii dla wersji FREE)
+    if (!isPremium && (categories?.length || 0) >= 6) {
+      setIsPremiumRequiredOpen(true); // Otwiera nowy modal Premium
+      return;
+    }
+
     if (!newCategory.trim() || !walletId) return;
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -27,7 +42,7 @@ export function CategoryManager({ walletId }: { walletId: number | null }) {
       const catData = {
         name: newCategory,
         user_id: user.id,
-        wallet_id: walletId, // PRZYPISANIE DO PORTFELA
+        wallet_id: walletId,
       };
 
       const { data, error } = await supabase
@@ -50,13 +65,16 @@ export function CategoryManager({ walletId }: { walletId: number | null }) {
 
   return (
     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-      <h2 className="font-bold text-gray-800 mb-4">Kategorie portfela</h2>
+      <h2 className="font-bold text-gray-800 mb-4">
+        Kategorie ({categories?.length || 0}/6 w planie Free)
+      </h2>
+
       <div className="flex gap-2 mb-4">
         <input
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
           placeholder="Nowa kategoria"
-          className="flex-1 border border-gray-200 p-3 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 border border-gray-200 p-3 rounded-xl bg-gray-50 outline-none"
         />
         <button
           onClick={addCategory}

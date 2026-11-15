@@ -16,6 +16,7 @@ import { MonthPicker } from "./components/MonthPicker";
 import { supabase } from "./supabaseClient";
 import { Auth } from "./components/Auth";
 import { LoadingSpinner } from "./components/LoadingSpinner";
+import { PremiumRequiredModal } from "./components/PremiumRequiredModal";
 registerLocale("pl", pl);
 import {
   ChevronLeft,
@@ -51,6 +52,7 @@ export default function App() {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isPremiumRequiredOpen, setIsPremiumRequiredOpen] = useState(false);
   const [newWalletName, setNewWalletName] = useState("");
   const [editingWallet, setEditingWallet] = useState<{
     id: number;
@@ -486,7 +488,11 @@ export default function App() {
                 userId={session.user.id}
                 walletId={activeWalletId}
               />
-              <CategoryManager walletId={activeWalletId} />
+              <CategoryManager
+                walletId={activeWalletId}
+                isPremium={isPremium}
+                setIsPremiumRequiredOpen={setIsPremiumRequiredOpen}
+              />
             </div>
             <TransactionList
               expenses={filteredExpenses}
@@ -740,17 +746,24 @@ export default function App() {
             )}
 
             {/* Przycisk Premium / Zarządzaj */}
-            {isPremium ? (
+            {isPremium && (
               <button
                 onClick={handleManageSubscription}
-                className="w-full p-3 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition mb-3"
+                className="w-full p-3 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition mb-4"
               >
                 Zarządzaj subskrypcją
               </button>
-            ) : (
+            )}
+            {/* Przycisk wewnątrz Twojego istniejącego modala "Twoje Portfele" */}
+            {!isPremium && (
               <button
-                onClick={() => setIsPackageModalOpen(true)}
-                className="w-full p-3 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition mb-3 shadow-lg"
+                onClick={() => {
+                  // 1. Zamykamy modal portfeli
+                  setIsWalletModalOpen(false);
+                  // 2. Otwieramy modal z planami (ten, który już masz!)
+                  setIsPackageModalOpen(true);
+                }}
+                className="w-full bg-blue-600 text-white p-4 rounded-2xl font-bold mb-4 shadow-lg hover:bg-blue-700 transition"
               >
                 🚀 Ulepsz do Premium
               </button>
@@ -779,7 +792,11 @@ export default function App() {
               walletId={activeWalletId}
             />
             <div className="mt-4">
-              <CategoryManager walletId={activeWalletId} />
+              <CategoryManager
+                walletId={activeWalletId}
+                isPremium={isPremium}
+                setIsPremiumRequiredOpen={setIsPremiumRequiredOpen}
+              />
             </div>
             <button
               onClick={() => setIsTransactionModalOpen(false)}
@@ -844,6 +861,16 @@ export default function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {isPremiumRequiredOpen && (
+        <PremiumRequiredModal
+          onClose={() => setIsPremiumRequiredOpen(false)}
+          onShowPlans={() => {
+            setIsPremiumRequiredOpen(false);
+            setIsPackageModalOpen(true); // Otwiera Twój modal z płatnościami
+          }}
+        />
       )}
 
       {isPremiumModalOpen && (

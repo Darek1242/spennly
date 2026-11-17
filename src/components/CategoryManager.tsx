@@ -3,6 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../db";
 import { X } from "lucide-react";
 import { supabase } from "../supabaseClient";
+import { DeleteConfirmModal } from "./DeleteConfirmModal"; // Zakładam istnienie tego komponentu
 
 export function CategoryManager({
   walletId,
@@ -15,6 +16,7 @@ export function CategoryManager({
 }) {
   const [newCategory, setNewCategory] = useState("");
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
 
   const categories = useLiveQuery(
     () =>
@@ -25,10 +27,14 @@ export function CategoryManager({
     [walletId],
   );
 
+  const expenses = useLiveQuery(() => db.expenses.toArray(), []);
+
   const addCategory = async () => {
-    // 1. Sprawdzenie limitu (6 kategorii dla wersji FREE)
-    if (!isPremium && (categories?.length || 0) >= 6) {
-      setIsPremiumRequiredOpen(true); // Otwiera nowy modal Premium
+    const categoryCount = categories?.length || 0;
+
+    // Blokada tylko jeśli nie ma Premium I przekroczono limit
+    if (!isPremium && categoryCount >= 6) {
+      setIsPremiumRequiredOpen(true);
       return;
     }
 
@@ -66,7 +72,9 @@ export function CategoryManager({
   return (
     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
       <h2 className="font-bold text-gray-800 mb-4">
-        Kategorie ({categories?.length || 0}/6 w planie Free)
+        {isPremium
+          ? "Twoje kategorie (nielimitowane)"
+          : `Kategorie (${categories?.length || 0}/6)`}
       </h2>
 
       <div className="flex gap-2 mb-4">
@@ -92,9 +100,21 @@ export function CategoryManager({
           >
             {c.name}
             <button
-              onClick={async () => {
-                await db.categories.delete(c.id!);
-                await supabase.from("categories").delete().eq("id", c.id!);
+              onClick={() => {
+                const hasExpenses = expenses?.some(
+                  (e) => e.category === c.name,
+                );
+                if (hasExpenses) {
+                  // Otwórz modal OSTRZEŻENIE (tylko z przyciskiem Zamknij)
+                  setDeleteTarget({
+                    id: null,
+                    message:
+                      "Nie możesz usunąć kategorii, do której przypisano wydatki.",
+                  });
+                } else {
+                  // Otwórz modal POTWIERDZENIE (z przyciskiem Usuń)
+                  setDeleteTarget(c);
+                }
               }}
               className="hover:text-red-500"
             >
@@ -103,6 +123,32 @@ export function CategoryManager({
           </div>
         ))}
       </div>
+
+      {/* Modal potwierdzenia */}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          isOpen={!!deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          // Jeśli id jest null, to znaczy że to tylko komunikat o błędzie -> nie pokazuj usuwania
+          onConfirm={
+            deleteTarget.id
+              ? async () => {
+                  await db.categories.delete(deleteTarget.id);
+                  await supabase
+                    .from("categories")
+                    .delete()
+                    .eq("id", deleteTarget.id);
+                  setDeleteTarget(null);
+                }
+              : null
+          }
+          message={
+            deleteTarget.id
+              ? "Kategoria zostanie trwale usunięta. Czy chcesz kontynuować?"
+              : deleteTarget.message
+          }
+        />
+      )}
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { IncomeHistory } from "./components/IncomeHistory";
 import { CategoryManager } from "./components/CategoryManager";
 import { WalletItem } from "./components/WalletItem";
 import { MonthPicker } from "./components/MonthPicker";
+import { DeleteConfirmModal } from "./components/DeleteConfirmModal";
 import { supabase } from "./supabaseClient";
 import { Auth } from "./components/Auth";
 import { LoadingSpinner } from "./components/LoadingSpinner";
@@ -46,6 +47,7 @@ export default function App() {
 
   // NOWE STANY DLA PORTFELI
   const [activeWalletId, setActiveWalletId] = useState<number | null>(null);
+  const [walletToDelete, setWalletToDelete] = useState<any>(null);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
@@ -664,6 +666,30 @@ export default function App() {
         </div>
       )}
 
+      {walletToDelete && (
+        <DeleteConfirmModal
+          isOpen={!!walletToDelete}
+          onClose={() => setWalletToDelete(null)}
+          onConfirm={async () => {
+            // Usuwamy z Supabase i DB
+            await supabase.from("wallets").delete().eq("id", walletToDelete.id);
+            await db.wallets.delete(walletToDelete.id!);
+
+            // Odświeżamy aktywny portfel
+            const remaining = allWallets?.filter(
+              (w) => w.id !== walletToDelete.id,
+            );
+            if (remaining && remaining.length > 0) {
+              setActiveWalletId(remaining[0].id!);
+            } else {
+              setActiveWalletId(null);
+            }
+            setWalletToDelete(null);
+          }}
+          message={`Czy na pewno chcesz usunąć portfel "${walletToDelete.name}" i wszystkie dane z nim związane?`}
+        />
+      )}
+
       {isWalletModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl">
@@ -688,30 +714,11 @@ export default function App() {
                   wallet={w}
                   isPremium={isPremium}
                   onEditClick={(wallet: any) => setEditingWallet(wallet)} // Otwiera modal
-                  onDelete={async () => {
-                    if (confirm("Czy na pewno usunąć portfel?")) {
-                      await supabase.from("wallets").delete().eq("id", w.id);
-                      await db.wallets.delete(w.id!);
-                      setActiveWalletId(
-                        allWallets.find((x) => x.id !== w.id)?.id || null,
-                      );
-                    }
-                  }}
+                  onDelete={() => setWalletToDelete(w)}
                   deleteButton={
                     allWallets.length > 1 && (
                       <button
-                        onClick={async () => {
-                          if (confirm("Czy na pewno usunąć portfel?")) {
-                            await supabase
-                              .from("wallets")
-                              .delete()
-                              .eq("id", w.id);
-                            await db.wallets.delete(w.id!);
-                            setActiveWalletId(
-                              allWallets.find((x) => x.id !== w.id)?.id || null,
-                            );
-                          }
-                        }}
+                        onClick={() => setWalletToDelete(w)} // Ustawiamy portfel do usunięcia
                         className="text-red-500 hover:text-red-700 p-2"
                       >
                         <Trash2 size={20} />
@@ -768,7 +775,6 @@ export default function App() {
                 🚀 Ulepsz do Premium
               </button>
             )}
-
             <button
               onClick={() => setIsWalletModalOpen(false)}
               className="w-full mt-6 p-3 bg-gray-100 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition"

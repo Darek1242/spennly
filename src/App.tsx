@@ -73,6 +73,7 @@ export default function App() {
 
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [showCharts, setShowCharts] = useState(false);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +84,12 @@ export default function App() {
     if (error) alert(error.message);
     else alert("Sprawdź e-mail!");
   };
+
+  useEffect(() => {
+    // Wykresy załadują się z 500ms opóźnieniem po załadowaniu strony
+    const timer = setTimeout(() => setShowCharts(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -476,10 +483,16 @@ export default function App() {
               incomes={filteredIncomes || []}
               onEdit={setEditingIncome}
             />
-            <ChartComponent
-              expenses={filteredExpenses}
-              categories={categories || []}
-            />
+            {showCharts ? (
+              <ChartComponent
+                expenses={filteredExpenses}
+                categories={categories || []}
+              />
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-400">
+                Ładowanie wykresu...
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-6">

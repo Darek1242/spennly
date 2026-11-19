@@ -211,6 +211,7 @@ export function ReportView({ walletId }: { walletId: number | null }) {
                   innerRadius={60}
                   outerRadius={80} // Mniejszy promień dla lepszego dopasowania
                   dataKey="value"
+                  isAnimationActive={false}
                   style={{ outline: "none" }}
                 >
                   {categoryData.map((_, i) => (

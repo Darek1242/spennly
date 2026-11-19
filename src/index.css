@@ -34,6 +34,9 @@ body {
 .react-datepicker-wrapper {
   display: block !important;
 }
+button {
+  touch-action: manipulation;
+}
 
 /* Naprawa szerokości kalendarza */
 .react-datepicker {

@@ -11,11 +11,11 @@ registerLocale("pl", pl);
 export function TransactionForms({
   categories,
   userId,
-  walletId, // NOWE
+  walletId,
 }: {
   categories: any[];
   userId: string;
-  walletId: number | null; // NOWE
+  walletId: number | null;
 }) {
   const [amount, setAmount] = useState("");
   const [incomeAmount, setIncomeAmount] = useState("");
@@ -25,8 +25,6 @@ export function TransactionForms({
 
   const inputClass =
     "w-full border border-gray-200 p-3 rounded-xl bg-white outline-none focus:ring-2 focus:ring-green-500 transition";
-  const dateClass =
-    "border border-gray-200 p-3 rounded-xl w-32 cursor-pointer bg-white text-center outline-none focus:ring-2 focus:ring-green-500";
 
   const handleAddExpense = async () => {
     if (!amount || !selectedCategory || !walletId) return;
@@ -36,7 +34,7 @@ export function TransactionForms({
       category: selectedCategory,
       date: expenseDate.toISOString(),
       user_id: userId,
-      wallet_id: walletId, // PRZYPISANIE DO PORTFELA
+      wallet_id: walletId,
       description: "",
     };
 
@@ -67,7 +65,7 @@ export function TransactionForms({
       amount: parseFloat(incomeAmount),
       date: incomeDate.toISOString(),
       user_id: userId,
-      wallet_id: walletId, // PRZYPISANIE DO PORTFELA
+      wallet_id: walletId,
     };
 
     const { data, error } = await supabase
@@ -89,14 +87,17 @@ export function TransactionForms({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* SEKCJA WPŁATY */}
       <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
         <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-          <Plus size={20} /> Dodaj środki
+          <Plus size={20} className="text-green-600" /> Dodaj środki
         </h2>
         <div className="flex gap-2">
           <input
             type="number"
-            {...({ inputMode: "decimal" } as any)}
+            // @ts-ignore
+            inputMode="decimal"
+            pattern="[0-9]*"
             value={incomeAmount}
             onChange={(e) => setIncomeAmount(e.target.value)}
             placeholder="Kwota"
@@ -109,9 +110,10 @@ export function TransactionForms({
             locale="pl"
             customInput={
               <input
-                className={dateClass}
-                inputMode="decimal"
-                autoComplete="off"
+                className="bg-gray-50 p-3 rounded-xl w-32 text-center cursor-pointer"
+                readOnly
+                // @ts-ignore
+                inputMode="none"
               />
             }
           />
@@ -124,17 +126,16 @@ export function TransactionForms({
         </div>
       </div>
 
+      {/* SEKCJA WYDATKU */}
       <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
         <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-          <input
-            type="number"
-            {...({ inputMode: "decimal" } as any)}
-            placeholder="Dodaj wydatek"
-          />
+          <Plus size={20} className="text-red-600" /> Dodaj wydatek
         </h2>
         <input
           type="number"
-          {...({ inputMode: "decimal" } as any)}
+          // @ts-ignore
+          inputMode="decimal"
+          pattern="[0-9]*"
           placeholder="Kwota"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
@@ -151,8 +152,14 @@ export function TransactionForms({
             onChange={(d: Date | null) => d && setExpenseDate(d)}
             dateFormat="dd/MM/yyyy"
             locale="pl"
-            autoComplete="off"
-            className={dateClass}
+            customInput={
+              <input
+                className="bg-gray-50 p-3 rounded-xl w-32 text-center cursor-pointer"
+                readOnly
+                // @ts-ignore
+                inputMode="none"
+              />
+            }
           />
         </div>
         <button

@@ -6,6 +6,7 @@ import { db } from "../db";
 import { registerLocale } from "react-datepicker";
 import { pl } from "date-fns/locale/pl";
 registerLocale("pl", pl);
+
 import {
   PieChart,
   Pie,
@@ -173,7 +174,13 @@ export function ReportView({ walletId }: { walletId: number | null }) {
             onChange={(d: Date | null) => d && setStartDate(d)}
             dateFormat="dd/MM/yyyy"
             locale="pl"
-            className="bg-gray-50 p-3 rounded-xl w-32 text-center cursor-pointer"
+            customInput={
+              <input
+                className="bg-gray-50 p-3 rounded-xl w-32 text-center cursor-pointer"
+                inputMode="none"
+                readOnly={true}
+              />
+            }
           />
           <span className="text-gray-400">—</span>
           <DatePicker
@@ -181,7 +188,13 @@ export function ReportView({ walletId }: { walletId: number | null }) {
             onChange={(d: Date | null) => d && setEndDate(d)}
             dateFormat="dd/MM/yyyy"
             locale="pl"
-            className="bg-gray-50 p-3 rounded-xl w-32 text-center cursor-pointer"
+            customInput={
+              <input
+                className="bg-gray-50 p-3 rounded-xl w-32 text-center cursor-pointer"
+                inputMode="none"
+                readOnly={true}
+              />
+            }
           />
         </div>
       </div>

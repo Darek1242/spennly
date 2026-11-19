@@ -788,28 +788,38 @@ export default function App() {
       {/* Modal Transakcji mobilny */}
       {isTransactionModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl">
-            <h2 className="font-bold text-xl mb-4">Dodaj wydatek</h2>
-
-            {/* Tutaj używamy Twoich oryginalnych komponentów */}
-            <TransactionForms
-              categories={categories || []}
-              userId={session.user.id}
-              walletId={activeWalletId}
-            />
-            <div className="mt-4">
-              <CategoryManager
-                walletId={activeWalletId}
-                isPremium={isPremium}
-                setIsPremiumRequiredOpen={setIsPremiumRequiredOpen}
-              />
+          {/* Główny kontener modala - max-h-[85vh] i flex-col zapewnią, że nie wyjdzie poza ekran */}
+          <div className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl flex flex-col max-h-[85vh]">
+            {/* 1. Nagłówek - przyklejony do góry */}
+            <div className="shrink-0 mb-4">
+              <h2 className="font-bold text-xl text-gray-800">Dodaj wydatek</h2>
             </div>
-            <button
-              onClick={() => setIsTransactionModalOpen(false)}
-              className="w-full mt-6 p-3 bg-gray-100 rounded-xl font-bold text-gray-600"
-            >
-              Zamknij
-            </button>
+
+            {/* 2. Treść - to będzie się przewijać (overflow-y-auto) */}
+            <div className="flex-1 overflow-y-auto pr-2">
+              <TransactionForms
+                categories={categories || []}
+                userId={session.user.id}
+                walletId={activeWalletId}
+              />
+              <div className="mt-4">
+                <CategoryManager
+                  walletId={activeWalletId}
+                  isPremium={isPremium}
+                  setIsPremiumRequiredOpen={setIsPremiumRequiredOpen}
+                />
+              </div>
+            </div>
+
+            {/* 3. Przycisk Zamknij - przyklejony do dołu */}
+            <div className="shrink-0 pt-4 mt-2 border-t border-gray-100">
+              <button
+                onClick={() => setIsTransactionModalOpen(false)}
+                className="w-full p-3 bg-gray-100 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition"
+              >
+                Zamknij
+              </button>
+            </div>
           </div>
         </div>
       )}

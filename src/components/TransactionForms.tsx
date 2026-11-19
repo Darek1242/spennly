@@ -96,6 +96,7 @@ export function TransactionForms({
         <div className="flex gap-2">
           <input
             type="number"
+            {...({ inputMode: "decimal" } as any)}
             value={incomeAmount}
             onChange={(e) => setIncomeAmount(e.target.value)}
             placeholder="Kwota"
@@ -106,8 +107,13 @@ export function TransactionForms({
             onChange={(d: Date | null) => d && setIncomeDate(d)}
             dateFormat="dd/MM/yyyy"
             locale="pl"
-            autoComplete="off"
-            className={dateClass}
+            customInput={
+              <input
+                className={dateClass}
+                inputMode="decimal"
+                autoComplete="off"
+              />
+            }
           />
           <button
             onClick={handleAddIncome}
@@ -120,10 +126,15 @@ export function TransactionForms({
 
       <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
         <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-          <Wallet size={20} /> Dodaj wydatek
+          <input
+            type="number"
+            {...({ inputMode: "decimal" } as any)}
+            placeholder="Dodaj wydatek"
+          />
         </h2>
         <input
           type="number"
+          {...({ inputMode: "decimal" } as any)}
           placeholder="Kwota"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
